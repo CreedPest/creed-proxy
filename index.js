@@ -9,9 +9,9 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 8080;
 
-const SERVICE_ACCOUNT_EMAIL = "creed-calendar@creed-pest.iam.gserviceaccount.com";
+const SERVICE_ACCOUNT_EMAIL = "calendar-bot@creed-booking-462016.iam.gserviceaccount.com";
 const PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n");
-const CALENDAR_ID = "creedpest.com_sldvi78o2vq63b1vfp8r0r87m0@group.calendar.google.com";
+const CALENDAR_ID = "erik@creedpest.com";
 
 const auth = new google.auth.JWT(
   SERVICE_ACCOUNT_EMAIL,
