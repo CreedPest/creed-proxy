@@ -1,47 +1,56 @@
-const express = require("express");
-const cors = require("cors");
-const fetch = require("node-fetch");
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+// ✅ Allow only GitHub Pages frontend
+app.use(cors({
+  origin: 'https://creedpest.github.io'
+}));
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXtE5qHfesanxb4_CI7tKGLlLAnkI-c6yE9C1RPKNwwNjfhMTj8fdcJFSHbZOgrXT0/exec";
+app.use(bodyParser.json());
 
-// Handle preflight requests
-app.options("/", (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
-  res.sendStatus(204);
-});
+// 🔹 Example data for availability (you should replace this with actual logic if pulling from Google Calendar or similar)
+app.get('/', (req, res) => {
+  const now = new Date();
+  const baseDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const result = [];
 
-app.get("/", async (req, res) => {
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL);
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+  for (let i = 0; i < 14; i++) {
+    const day = new Date(baseDate);
+    day.setDate(baseDate.getDate() + i);
 
-app.post("/", async (req, res) => {
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+    // Skip Saturdays and Sundays
+    if (day.getDay() === 0 || day.getDay() === 6) continue;
+
+    const dateStr = day.toISOString().split('T')[0];
+    result.push({
+      date: dateStr,
+      windows: [
+        { label: "8–10 AM", start: [8] },
+        { label: "10 AM–12 PM", start: [10] },
+        { label: "12–2 PM", start: [12] },
+        { label: "2–4 PM", start: [14] }
+      ]
     });
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
+
+  res.json(result);
+});
+
+// 🔹 Handle booking form submission
+app.post('/', (req, res) => {
+  const formData = req.body;
+
+  // You can plug this into an email service, Google Sheet, DB, etc.
+  console.log("New booking:", formData);
+
+  // Simulate success
+  res.json({ success: true });
 });
 
 app.listen(PORT, () => {
-  console.log(`Proxy is running on port ${PORT}`);
+  console.log(`Proxy server running on port ${PORT}`);
 });
